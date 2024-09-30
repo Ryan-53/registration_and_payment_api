@@ -6,7 +6,7 @@ Purpose: Tests the functioning of the registration endpoint
 """
 
 import unittest
-from registration_service import app
+from registration_payment_service import app
 
 class RegistrationTest(unittest.TestCase):
   

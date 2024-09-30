@@ -2,7 +2,7 @@
 Name: registration_service.py
 Author: Ryan Gascoigne-Jones
 
-Purpose: Registration microservice handling user registrations.
+Purpose: Service handling user registrations and payments
 """
 
 from flask import Flask, Response, request, json
