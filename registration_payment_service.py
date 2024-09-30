@@ -6,7 +6,7 @@ Purpose: Service handling user registrations and payments
 """
 
 from flask import Flask, Response, request, json
-from utils import check_username, check_password, check_email, check_dob
+from utils import check_username, check_password, check_email, check_dob, check_ccn
 
 app: Flask = Flask(__name__)
 
@@ -20,6 +20,7 @@ def register() -> Response:
   # Checks username
   username: str = user_input["username"]
   username_status: Response = check_username(username=username)
+  # Returns error status if an invalid username has been entered
   if username_status.status_code != 200:
     return username_status
   
@@ -40,6 +41,19 @@ def register() -> Response:
   dob_status: Response = check_dob(dob=dob)
   if dob_status.status_code != 200:
     return dob_status
+
+  # Checks credit card number
+  ccn_status: Response
+  ccn: str
+  # Try statement in case the ccn hasn't been input (as it is optional)
+  try:
+    ccn = user_input["credit_card_number"]
+    ccn_status = check_ccn(ccn=ccn)
+    if ccn_status.status_code != 200:
+      return ccn_status
+  # Leaves ccn empty if no ccn has been input
+  except:
+    ccn = ""
   
   return Response(response="User successfully registered",
                   status=201,

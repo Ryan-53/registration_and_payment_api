@@ -83,12 +83,24 @@ def check_dob(dob: str) -> Response:
     if dob_obj > (date.today() - relativedelta(years=18)):
       return Response(response=json.dumps({"error": "User must be at least 18" \
                       " years old"}),
+                    status=403,
+                    content_type="application/json")
+
+  except ValueError:
+    return Response(response=json.dumps({"error": "Date of Birth must be in " \
+                      "format: YYYY-MM-DD"}),
                     status=400,
                     content_type="application/json")
 
-  except:
-    return Response(response=json.dumps({"error": "Date of Birth must be in " \
-                      "format: YYYY-MM-DD"}),
+  return Response(status=200)
+
+def check_ccn(ccn: str) -> Response:
+  """Checks credit card number is valid"""
+
+  # Checks ccn is 16 numbers
+  if not ccn.isnumeric() or len(ccn) != 16:
+    return Response(response=json.dumps({"error": "Credit card number must " \
+                      "contain 16 numerical digits"}),
                     status=400,
                     content_type="application/json")
 

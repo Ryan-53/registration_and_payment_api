@@ -7,6 +7,7 @@ Purpose: Tests the functioning of the registration endpoint
 
 import unittest
 from registration_payment_service import app
+from datetime import date
 
 class RegistrationTest(unittest.TestCase):
   
@@ -22,7 +23,7 @@ class RegistrationTest(unittest.TestCase):
       "password": "Pass1234",
       "email": "user@example.com",
       "dob": "2000-01-01",
-      "credit_card_number": "1234567812345678"
+      "credit_card_number": "1234567891234567"
     }
 
   def test_valid_registration(self):
@@ -49,7 +50,8 @@ class RegistrationTest(unittest.TestCase):
 
 
   def test_invalid_username_alphanumeric(self):
-    """Tests an invalid username with non alphanumeric characters in it."""
+    """Tests an invalid username with non alphanumeric characters in
+    it."""
 
     invalid_data: dict = self.valid_data
     invalid_data['username'] = "user123?"
@@ -139,13 +141,44 @@ class RegistrationTest(unittest.TestCase):
     """Tests a DoB that would mean the user is under 18"""
 
     invalid_data: dict = self.valid_data
-    # This could cause an error in 18 years but it is better than having an
-    # external dependency (time module) in a test.
-    invalid_data['dob'] = "2024-01-01"
+    # Sets DoB to todays date
+    invalid_data['dob'] = date.today().strftime("%Y-%m-%d")
+
+    # Checks the response's status code is as expected
+    response = self.client.post('/users', json=invalid_data)
+    self.assertEqual(response.status_code, 403)
+
+  ## Credit card number tests
+
+  def test_invalid_ccn_length(self):
+    """Tests an invalid credit card number which is not 16 digits"""
+
+    invalid_data: dict = self.valid_data
+    invalid_data['credit_card_number'] = "123456789123456"
 
     # Checks the response's status code is as expected
     response = self.client.post('/users', json=invalid_data)
     self.assertEqual(response.status_code, 400)
+
+  def test_invalid_ccn_not_numeric(self):
+    """Tests an invalid credit card number which is not numeric"""
+
+    invalid_data: dict = self.valid_data
+    invalid_data['credit_card_number'] = "123456789a234567"
+
+    # Checks the response's status code is as expected
+    response = self.client.post('/users', json=invalid_data)
+    self.assertEqual(response.status_code, 400)
+
+  def test_valid_ccn_none(self):
+    """Tests passing no credit card number"""
+
+    valid_data: dict = self.valid_data
+    valid_data.pop('credit_card_number')
+
+    # Checks the response's status code is as expected (201)
+    response = self.client.post('/users', json=valid_data)
+    self.assertEqual(response.status_code, 201)
 
 
 if __name__ == "__main__":
