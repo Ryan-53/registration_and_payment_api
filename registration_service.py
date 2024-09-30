@@ -6,7 +6,7 @@ Purpose: Registration microservice handling user registrations.
 """
 
 from flask import Flask, Response, request, json
-from utils import check_username, check_password, check_email
+from utils import check_username, check_password, check_email, check_dob
 
 app: Flask = Flask(__name__)
 
@@ -34,6 +34,12 @@ def register() -> Response:
   email_status: Response = check_email(email=email)
   if email_status.status_code != 200:
     return email_status
+  
+  # Checks DoB
+  dob: str = user_input["dob"]
+  dob_status: Response = check_dob(dob=dob)
+  if dob_status.status_code != 200:
+    return dob_status
   
   return Response(response="User successfully registered",
                   status=201,
