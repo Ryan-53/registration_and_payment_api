@@ -30,18 +30,21 @@ class RegistrationTest(unittest.TestCase):
   def test_valid_registration(self):
     """Tests a completely valid POST request with expected data."""
 
-    # Sends a POST request
-    response = self.client.post('/users', json=self.valid_data)
-    
-    # Checks if the status code is 201 Created
-    self.assertEqual(response.status_code, 201)
+    # Mocks the users list
+    with patch('registration_payment_service.users', new=[]) as mock_users:
 
-  ## Username tests
+      # Sends a POST request
+      response = self.client.post('/users', json=self.valid_data)
+      
+      # Checks if the status code is 201 Created
+      self.assertEqual(response.status_code, 201)
+
+  ## Username tests ##
 
   def test_invalid_username_space(self):
     """Tests an invalid username with a space in it."""
 
-    invalid_data: dict = self.valid_data
+    invalid_data: dict = self.valid_data.copy()
     invalid_data['username'] = "user 123"
 
     response = self.client.post('/users', json=invalid_data)
@@ -49,24 +52,43 @@ class RegistrationTest(unittest.TestCase):
     # Checks if the status code is 400 Bad Request
     self.assertEqual(response.status_code, 400)
 
-
   def test_invalid_username_alphanumeric(self):
     """Tests an invalid username with non alphanumeric characters in
     it."""
 
-    invalid_data: dict = self.valid_data
+    invalid_data: dict = self.valid_data.copy()
     invalid_data['username'] = "user123?"
 
     # Checks the response's status code is as expected
     response = self.client.post('/users', json=invalid_data)
     self.assertEqual(response.status_code, 400)
 
-  ## Password tests
+  def test_invalid_username_taken(self):
+    """Tests an invalid username that is already taken by another
+    user"""
+
+    # Mocks the users list (exists within this test case only)
+    with patch('registration_payment_service.users', new=[]) as mock_users:
+
+      # Checks the response's status code is 201 Created for the first
+      # creation and 409 Conflict when the same user is attempted to be
+      # created again.
+      response = self.client.post('/users', json=self.valid_data)
+      self.assertEqual(response.status_code, 201)
+      response = self.client.post('/users', json=self.valid_data)
+      self.assertEqual(response.status_code, 409)
+
+      # Checks that only 1 instance of the user was added to the mocked
+      # users list.
+      self.assertEqual(len(mock_users), 1)
+      self.assertEqual(mock_users[0]["username"], self.valid_data["username"])
+
+  ## Password tests ##
 
   def test_invalid_password_length(self):
     """Tests an invalid password that is too short"""
 
-    invalid_data: dict = self.valid_data
+    invalid_data: dict = self.valid_data.copy()
     invalid_data['password'] = "Pass123"
 
     # Checks the response's status code is as expected
@@ -77,7 +99,7 @@ class RegistrationTest(unittest.TestCase):
     """Tests an invalid password that doesn't contain an upper case
     character"""
 
-    invalid_data: dict = self.valid_data
+    invalid_data: dict = self.valid_data.copy()
     invalid_data['password'] = "pass1234"
 
     # Checks the response's status code is as expected
@@ -87,19 +109,19 @@ class RegistrationTest(unittest.TestCase):
   def test_invalid_password_number(self):
     """Tests an invalid password that doesn't contain a number"""
 
-    invalid_data: dict = self.valid_data
+    invalid_data: dict = self.valid_data.copy()
     invalid_data['password'] = "Password"
 
     # Checks the response's status code is as expected
     response = self.client.post('/users', json=invalid_data)
     self.assertEqual(response.status_code, 400)
 
-  ## Email tests
+  ## Email tests ##
 
   def test_invalid_email_nodomain(self):
     """Tests an invalid email that is not a valid domain"""
 
-    invalid_data: dict = self.valid_data
+    invalid_data: dict = self.valid_data.copy()
     invalid_data['email'] = "user@example"
 
     # Checks the response's status code is as expected
@@ -109,19 +131,19 @@ class RegistrationTest(unittest.TestCase):
   def test_invalid_email_noat(self):
     """Tests an invalid password that doesn't contain an @ symbol"""
 
-    invalid_data: dict = self.valid_data
+    invalid_data: dict = self.valid_data.copy()
     invalid_data['email'] = "user.example.com"
 
     # Checks the response's status code is as expected
     response = self.client.post('/users', json=invalid_data)
     self.assertEqual(response.status_code, 400)
 
-  ## DoB tests
+  ## DoB tests ##
 
   def test_invalid_dob_format(self):
     """Tests an invalid DoB that is not in the ISO 8601 format"""
 
-    invalid_data: dict = self.valid_data
+    invalid_data: dict = self.valid_data.copy()
     invalid_data['dob'] = "01-01-2020"
 
     # Checks the response's status code is as expected
@@ -131,7 +153,7 @@ class RegistrationTest(unittest.TestCase):
   def test_invalid_dob_nodate(self):
     """Tests an invalid DoB that is not a date"""
 
-    invalid_data: dict = self.valid_data
+    invalid_data: dict = self.valid_data.copy()
     invalid_data['dob'] = "2001"
 
     response = self.client.post('/users', json=invalid_data)
@@ -141,7 +163,7 @@ class RegistrationTest(unittest.TestCase):
   def test_invalid_dob_age(self):
     """Tests a DoB that would mean the user is under 18"""
 
-    invalid_data: dict = self.valid_data
+    invalid_data: dict = self.valid_data.copy()
     # Sets DoB to todays date
     invalid_data['dob'] = date.today().strftime("%Y-%m-%d")
 
@@ -149,12 +171,12 @@ class RegistrationTest(unittest.TestCase):
     response = self.client.post('/users', json=invalid_data)
     self.assertEqual(response.status_code, 403)
 
-  ## Credit card number tests
+  ## Credit card number tests ##
 
   def test_invalid_ccn_length(self):
     """Tests an invalid credit card number which is not 16 digits"""
 
-    invalid_data: dict = self.valid_data
+    invalid_data: dict = self.valid_data.copy()
     invalid_data['credit_card_number'] = "123456789123456"
 
     # Checks the response's status code is as expected
@@ -164,7 +186,7 @@ class RegistrationTest(unittest.TestCase):
   def test_invalid_ccn_not_numeric(self):
     """Tests an invalid credit card number which is not numeric"""
 
-    invalid_data: dict = self.valid_data
+    invalid_data: dict = self.valid_data.copy()
     invalid_data['credit_card_number'] = "123456789a234567"
 
     # Checks the response's status code is as expected
@@ -174,14 +196,14 @@ class RegistrationTest(unittest.TestCase):
   def test_valid_ccn_none(self):
     """Tests passing no credit card number"""
 
-    valid_data: dict = self.valid_data
+    valid_data: dict = self.valid_data.copy()
     valid_data.pop('credit_card_number')
 
     # Checks the response's status code is as expected (201 Created)
     response = self.client.post('/users', json=valid_data)
     self.assertEqual(response.status_code, 201)
 
-  ## User creation test
+  ## User creation test ##
 
   def test_user_creation(self):
     """Tests the creation of a user during valid registration"""
@@ -193,8 +215,6 @@ class RegistrationTest(unittest.TestCase):
       response = self.client.post('/users', json=self.valid_data)
       self.assertEqual(response.status_code, 201)
 
-      print(f"Users list {mock_users}")
-
       # Checks if the user was added to the mocked users list
       self.assertEqual(len(mock_users), 1)
       self.assertEqual(mock_users[0]["username"], self.valid_data["username"])
@@ -205,11 +225,13 @@ class RegistrationTest(unittest.TestCase):
     # Mocks the users list (exists within this test case only)
     with patch('registration_payment_service.users', new=[]) as mock_users:
 
-      second_valid_data = self.valid_data
+      second_valid_data: dict = self.valid_data.copy()
       second_valid_data['username'] = 'user456'
 
-      # Checks the response's status code is as expected (201 Created)
+      # Checks the response's status code is as expected for both user
+      # creations (201 Created).
       response = self.client.post('/users', json=self.valid_data)
+      self.assertEqual(response.status_code, 201)
       response = self.client.post('/users', json=second_valid_data)
       self.assertEqual(response.status_code, 201)
 

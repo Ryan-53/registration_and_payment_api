@@ -13,7 +13,7 @@ from dateutil.relativedelta import relativedelta
 # Local Imports
 from .utils import check_contains_upper_and_num
 
-def check_username(username: str) -> Response:
+def check_username(username: str, existing_users: list[dict]) -> Response:
   """Checks username is valid"""
 
   # Checks username is alphanumeric
@@ -31,7 +31,11 @@ def check_username(username: str) -> Response:
                     content_type="application/json")
 
   # Checks username doesn't already exist
-  # TODO: Check if username already exists
+  for user in existing_users:
+    if user['username'] == username:
+      return Response(response=json.dumps({"error": "Username already taken."}),
+                      status=409,
+                      content_type="application/json")
 
   return Response(status=200)
 
@@ -105,3 +109,5 @@ def check_ccn(ccn: str) -> Response:
                     content_type="application/json")
 
   return Response(status=200)
+
+      

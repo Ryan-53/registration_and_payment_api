@@ -21,7 +21,8 @@ def register() -> Response:
 
   # Checks username
   username: str = user_input["username"]
-  username_status: Response = check_username(username=username)
+  username_status: Response = check_username(username=username,
+                                             existing_users=users)
   # Returns error status if an invalid username has been entered
   if username_status.status_code != 200:
     return username_status
