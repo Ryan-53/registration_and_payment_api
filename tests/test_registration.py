@@ -6,7 +6,8 @@ Purpose: Tests the functioning of the registration endpoint
 """
 
 import unittest
-from registration_payment_service import app
+from unittest.mock import patch
+from registration_payment_service import app, users
 from datetime import date
 
 class RegistrationTest(unittest.TestCase):
@@ -96,7 +97,7 @@ class RegistrationTest(unittest.TestCase):
   ## Email tests
 
   def test_invalid_email_nodomain(self):
-    """Tests an invalid password that is too short"""
+    """Tests an invalid email that is not a valid domain"""
 
     invalid_data: dict = self.valid_data
     invalid_data['email'] = "user@example"
@@ -106,7 +107,7 @@ class RegistrationTest(unittest.TestCase):
     self.assertEqual(response.status_code, 400)
 
   def test_invalid_email_noat(self):
-    """Tests an invalid password that is too short"""
+    """Tests an invalid password that doesn't contain an @ symbol"""
 
     invalid_data: dict = self.valid_data
     invalid_data['email'] = "user.example.com"
@@ -176,9 +177,46 @@ class RegistrationTest(unittest.TestCase):
     valid_data: dict = self.valid_data
     valid_data.pop('credit_card_number')
 
-    # Checks the response's status code is as expected (201)
+    # Checks the response's status code is as expected (201 Created)
     response = self.client.post('/users', json=valid_data)
     self.assertEqual(response.status_code, 201)
+
+  ## User creation test
+
+  def test_user_creation(self):
+    """Tests the creation of a user during valid registration"""
+
+    # Mocks the users list
+    with patch('registration_payment_service.users', new=[]) as mock_users:
+
+      # Checks the response's status code is as expected (201 Created)
+      response = self.client.post('/users', json=self.valid_data)
+      self.assertEqual(response.status_code, 201)
+
+      print(f"Users list {mock_users}")
+
+      # Checks if the user was added to the mocked users list
+      self.assertEqual(len(mock_users), 1)
+      self.assertEqual(mock_users[0]["username"], self.valid_data["username"])
+
+  def test_user_creation_multiple(self):
+    """Tests the creation of 2 users with valid registrations"""
+
+    # Mocks the users list (exists within this test case only)
+    with patch('registration_payment_service.users', new=[]) as mock_users:
+
+      second_valid_data = self.valid_data
+      second_valid_data['username'] = 'user456'
+
+      # Checks the response's status code is as expected (201 Created)
+      response = self.client.post('/users', json=self.valid_data)
+      response = self.client.post('/users', json=second_valid_data)
+      self.assertEqual(response.status_code, 201)
+
+      # Checks if both users were added to the mocked users list
+      self.assertEqual(len(mock_users), 2)
+      self.assertEqual(mock_users[0]["username"], self.valid_data["username"])
+      self.assertEqual(mock_users[1]["username"], second_valid_data["username"])
 
 
 if __name__ == "__main__":

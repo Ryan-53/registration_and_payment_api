@@ -1,5 +1,5 @@
 """
-Name: registration_service.py
+Name: check_user_registration.py
 Author: Ryan Gascoigne-Jones
 
 Purpose: Contains functions which check a user's registration information.

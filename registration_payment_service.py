@@ -1,5 +1,5 @@
 """
-Name: registration_service.py
+Name: registration_payment_service.py
 Author: Ryan Gascoigne-Jones
 
 Purpose: Service handling user registrations and payments
@@ -9,6 +9,8 @@ from flask import Flask, Response, request, json
 from utils import check_username, check_password, check_email, check_dob, check_ccn
 
 app: Flask = Flask(__name__)
+
+users: list[dict] = []
 
 @app.route("/users", methods=["POST"])
 def register() -> Response:
@@ -54,6 +56,15 @@ def register() -> Response:
   # Leaves ccn empty if no ccn has been input
   except:
     ccn = ""
+
+  # Creates user (adds to store)
+  users.append({
+    'username': username,
+    'password': password,
+    'email': email,
+    'dob': dob,
+    'credit_card_number': ccn
+  })
   
   return Response(response="User successfully registered",
                   status=201,
