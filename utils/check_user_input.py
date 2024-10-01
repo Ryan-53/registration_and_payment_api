@@ -1,11 +1,11 @@
 """
-Name: check_user_registration.py
+Name: check_user_input.py
 Author: Ryan Gascoigne-Jones
 
-Purpose: Contains functions which check a user's registration information.
+Purpose: Contains functions which check a request's json body.
 """
 
-from flask import Response, jsonify
+from flask import Response
 import json
 import re
 from datetime import datetime, date
@@ -98,13 +98,13 @@ def check_dob(dob: str) -> Response:
 
   return Response(status=200)
 
-def check_ccn(ccn: str) -> Response:
-  """Checks credit card number is valid"""
+def check_number(num: str, digits: int) -> Response:
+  """Checks a numerical value is valid"""
 
-  # Checks ccn is 16 numbers
-  if not ccn.isnumeric() or len(ccn) != 16:
-    return Response(response=json.dumps({"error": "Credit card number must " \
-                      "contain 16 numerical digits"}),
+  # Checks num is 16 numbers
+  if not num.isnumeric() or len(num) != digits:
+    return Response(response=json.dumps({"error": "Number must contain " \
+                      f"{digits} numerical digits."}),
                     status=400,
                     content_type="application/json")
 

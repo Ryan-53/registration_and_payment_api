@@ -14,6 +14,7 @@ import json
 ### register() tests
 
 class RegistrationTest(unittest.TestCase):
+  """Tests the register() mapping function"""
   
   def setUp(self):
     """Set up a test client and mock data"""
@@ -43,7 +44,6 @@ class RegistrationTest(unittest.TestCase):
       self.assertEqual(response.status_code, 201)
       # Checks the data of the user created and saved matches with the
       # data sent in request
-      print(json.loads(response.data))
       self.assertEqual(json.loads(response.data)['user'], self.valid_data)
 
   ## Username tests ##
@@ -199,6 +199,8 @@ class RegistrationTest(unittest.TestCase):
     # Checks the response's status code is as expected
     response = self.client.post('/users', json=invalid_data)
     self.assertEqual(response.status_code, 400)
+    self.assertEqual(json.loads(response.data)['error'], 
+                     "Number must contain 16 numerical digits.")
 
   def test_valid_ccn_none(self):
     """Tests passing no credit card number"""
@@ -251,6 +253,7 @@ class RegistrationTest(unittest.TestCase):
 ### get_users() tests
 
 class GetUsersTest(unittest.TestCase):
+  """Tests the get_users() mapping function"""
 
   def setUp(self):
     """Set up a test client and mock data"""
@@ -320,6 +323,55 @@ class GetUsersTest(unittest.TestCase):
       # Check that all users are returned
       self.assertEqual(len(filtered_users), 3)
       self.assertEqual(self.users, filtered_users)
+
+
+## make_payment() tests
+
+class MakePaymentTest(unittest.TestCase):
+  """Tests the make_payment() mapping function"""
+
+  def setUp(self):
+    """Set up a test client and mock data"""
+
+    app.testing = True
+    self.client = app.test_client()
+
+    self.valid_data = {
+      "credit_card_number": "1234567891234567",
+      "amount": "123"
+    }
+
+  def test_invalid_ccn_length(self):
+    """Tests an invalid credit card number which is not 16 digits"""
+
+    invalid_data: dict = self.valid_data.copy()
+    invalid_data['credit_card_number'] = "123456789123456"
+
+    # Checks the response's status code is as expected
+    response = self.client.post('/payments', json=invalid_data)
+    self.assertEqual(response.status_code, 400)
+
+  def test_invalid_ccn_not_numeric(self):
+    """Tests an invalid credit card number which is not numeric"""
+
+    invalid_data: dict = self.valid_data.copy()
+    invalid_data['credit_card_number'] = "123456789a234567"
+
+    # Checks the response's status code is as expected
+    response = self.client.post('/payments', json=invalid_data)
+    self.assertEqual(response.status_code, 400)
+    self.assertEqual(json.loads(response.data)['error'], 
+                     "Number must contain 16 numerical digits.")
+
+  def test_valid_ccn_none(self):
+    """Tests passing no credit card number"""
+
+    valid_data: dict = self.valid_data.copy()
+    valid_data.pop('credit_card_number')
+
+    # Checks the response's status code is as expected (400 Bad Request)
+    response = self.client.post('/payments', json=valid_data)
+    self.assertEqual(response.status_code, 400)
 
 
 if __name__ == "__main__":

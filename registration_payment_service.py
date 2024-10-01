@@ -6,7 +6,8 @@ Purpose: Service handling user registrations and payments
 """
 
 from flask import Flask, Response, request, json
-from utils import check_username, check_password, check_email, check_dob, check_ccn
+from utils import check_username, check_password, check_email, check_dob, \
+  check_number, check_ccn_registered
 
 app: Flask = Flask(__name__)
 
@@ -49,7 +50,7 @@ def register() -> Response:
   # Try statement in case the ccn hasn't been input (as it is optional)
   try:
     ccn: str = user_input["credit_card_number"]
-    ccn_status: Response = check_ccn(ccn=ccn)
+    ccn_status: Response = check_number(num=ccn, digits=16)
     if ccn_status.status_code != 200:
       return ccn_status
     
@@ -81,6 +82,7 @@ def register() -> Response:
                   }),
                   status=201,
                   content_type="application/json")
+
 
 @app.route("/users", methods=["GET"])
 def get_users() -> Response:
@@ -114,6 +116,38 @@ def get_users() -> Response:
   return Response(response=json.dumps(filtered_users),
                   status=200,
                   content_type="application/json")
+
+
+@app.route("/payments", methods=["POST"])
+def make_payment() -> Response:
+  """Checks payment values are correct, if so returning 201 Created"""
+
+  # Gets json object passed through POST request
+  user_input: dict = request.get_json()
+
+  # Try statement in case ccn hasn't been input (empty)
+  try:
+    # Checks credit card number is valid
+    ccn: str = user_input["credit_card_number"]
+    ccn_status: Response = check_number(num=ccn, digits=16)
+    if ccn_status.status_code != 200:
+      return ccn_status
+
+  # If ccn has not been input (empty) return 400 Bad Request
+  except:
+    return Response(response=json.dumps({"error": "Number must contain 16 " \
+                      "numerical digits."}),
+                    status=400,
+                    content_type="application/json")
+
+  # Checks amount is valid
+  amount: str = user_input["amount"]
+  amount_status: Response = check_number(num=amount, digits=3)
+  if amount_status.status_code != 200:
+    return amount_status
+  
+  # Checks credit card number is registered to a user in system
+  return check_ccn_registered(ccn=ccn, users=users, amount=amount)
 
 
 if __name__ == "__main__":
