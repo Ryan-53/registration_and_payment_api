@@ -46,29 +46,73 @@ def register() -> Response:
     return dob_status
 
   # Checks credit card number
-  ccn_status: Response
-  ccn: str
   # Try statement in case the ccn hasn't been input (as it is optional)
   try:
-    ccn = user_input["credit_card_number"]
-    ccn_status = check_ccn(ccn=ccn)
+    ccn: str = user_input["credit_card_number"]
+    ccn_status: Response = check_ccn(ccn=ccn)
     if ccn_status.status_code != 200:
       return ccn_status
-  # Leaves ccn empty if no ccn has been input
+    
+    # Creates new_user dict to add to users list
+    new_user: dict = {
+      'username': username,
+      'password': password,
+      'email': email,
+      'dob': dob,
+      'credit_card_number': ccn
+    }
+
+  # Creates new_user dict with no ccn
   except:
-    ccn = ""
+    new_user: dict = {
+      'username': username,
+      'password': password,
+      'email': email,
+      'dob': dob
+    }
 
   # Creates user (adds to store)
-  users.append({
-    'username': username,
-    'password': password,
-    'email': email,
-    'dob': dob,
-    'credit_card_number': ccn
-  })
+  users.append(new_user)
   
-  return Response(response="User successfully registered",
+  # Return 
+  return Response(response=json.dumps({
+                    "message": "User successfully registered",
+                    "user": new_user
+                  }),
                   status=201,
+                  content_type="application/json")
+
+@app.route("/users", methods=["GET"])
+def get_users() -> Response:
+
+  # Gets credit card filter from query parameter
+  cc_filter = request.args.get('CreditCard')
+  filtered_users: list[dict] = []
+
+  # If cc filter is "Yes" return all users with a ccn
+  if cc_filter == "Yes":
+    for user in users:
+      # Checks if each user has a ccn
+      if user['credit_card_number']:
+        filtered_users.append(user)
+
+  # If cc filter is "No" return all users without a ccn
+  elif cc_filter == "No":
+    for user in users:
+      if not user['credit_card_number']:
+        filtered_users.append(user)
+
+  # If a cc filter was not given, return all users
+  else:
+    filtered_users = users
+
+  # If there is no users for the given filter return 204 No Content
+  if filtered_users == []:
+    return Response(status=204)
+
+  # Returns list of users for chosen filter along with 200 OK
+  return Response(response=json.dumps(filtered_users),
+                  status=200,
                   content_type="application/json")
 
 

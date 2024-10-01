@@ -9,11 +9,14 @@ import unittest
 from unittest.mock import patch
 from registration_payment_service import app, users
 from datetime import date
+import json
+
+### register() tests
 
 class RegistrationTest(unittest.TestCase):
   
   def setUp(self):
-    """Set up a test client"""
+    """Set up a test client and mock data"""
 
     app.testing = True
     self.client = app.test_client()
@@ -38,6 +41,10 @@ class RegistrationTest(unittest.TestCase):
       
       # Checks if the status code is 201 Created
       self.assertEqual(response.status_code, 201)
+      # Checks the data of the user created and saved matches with the
+      # data sent in request
+      print(json.loads(response.data))
+      self.assertEqual(json.loads(response.data)['user'], self.valid_data)
 
   ## Username tests ##
 
@@ -239,6 +246,80 @@ class RegistrationTest(unittest.TestCase):
       self.assertEqual(len(mock_users), 2)
       self.assertEqual(mock_users[0]["username"], self.valid_data["username"])
       self.assertEqual(mock_users[1]["username"], second_valid_data["username"])
+
+
+### get_users() tests
+
+class GetUsersTest(unittest.TestCase):
+
+  def setUp(self):
+    """Set up a test client and mock data"""
+
+    app.testing = True
+    self.client = app.test_client()
+
+    self.users = [
+      {"username": "user1", "credit_card_number": "1234567812345678"},
+      {"username": "user2", "credit_card_number": ""},
+      {"username": "user3", "credit_card_number": "8765432187654321"}
+    ]
+
+  def test_get_users_cc_filter_yes(self):
+    """Tests the GET /users endpoint with cc filter of 'Yes' """
+
+    # Mocks the users list (exists within this test case only)
+    with patch('registration_payment_service.users', self.users):
+
+      # Send GET request with a CreditCard=Yes query
+      response = self.client.get('/users?CreditCard=Yes')
+      self.assertEqual(response.status_code, 200)
+
+      # Parse the json response body
+      filtered_users = json.loads(response.data)
+
+      # Check that only the two users without a ccn are returned
+      self.assertEqual(len(filtered_users), 2)
+      self.assertIn(
+        {"username": "user1", "credit_card_number": "1234567812345678"},
+        filtered_users)
+      self.assertIn(
+        {"username": "user3", "credit_card_number": "8765432187654321"},
+        filtered_users)
+
+  def test_get_users_cc_filter_no(self):
+    """Tests the GET /users endpoint with cc filter of 'No' """
+
+    # Mocks the users list (exists within this test case only)
+    with patch('registration_payment_service.users', self.users):
+
+      # Send GET request with a CreditCard=Yes query
+      response = self.client.get('/users?CreditCard=No')
+      self.assertEqual(response.status_code, 200)
+
+      # Parse the json response body
+      filtered_users = json.loads(response.data)
+
+      # Check that the only user without a ccn is returned
+      self.assertEqual(len(filtered_users), 1)
+      self.assertIn({"username": "user2", "credit_card_number": ""},
+                    filtered_users)
+
+  def test_get_users_cc_filter_none(self):
+    """Tests the GET /users endpoint with no cc filter"""
+
+    # Mocks the users list (exists within this test case only)
+    with patch('registration_payment_service.users', self.users):
+
+      # Send GET request with a CreditCard=Yes query
+      response = self.client.get('/users')
+      self.assertEqual(response.status_code, 200)
+
+      # Parse the json response body
+      filtered_users = json.loads(response.data)
+
+      # Check that all users are returned
+      self.assertEqual(len(filtered_users), 3)
+      self.assertEqual(self.users, filtered_users)
 
 
 if __name__ == "__main__":
