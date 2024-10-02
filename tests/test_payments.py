@@ -34,6 +34,7 @@ class MakePaymentTest(unittest.TestCase):
       "credit_card_number": "1234567891234567"
     }]
 
+
   ## Valid payment test ##
 
   def test_valid_payment(self):
@@ -46,6 +47,7 @@ class MakePaymentTest(unittest.TestCase):
       self.assertEqual(response.status_code, 201)
       self.assertEqual(json.loads(response.data)['message'],
                        f"Payment of {self.valid_data['amount']} made.")
+
 
   ## Credit card number tests ##
 
@@ -100,6 +102,7 @@ class MakePaymentTest(unittest.TestCase):
       self.assertEqual(json.loads(response.data)['error'],
                        "Credit card number not registered with any user.")
 
+
   ## Amount value tests ##
 
   def test_invalid_amount_length(self):
@@ -112,6 +115,7 @@ class MakePaymentTest(unittest.TestCase):
     self.assertEqual(response.status_code, 400)
     self.assertEqual(json.loads(response.data)['error'], 
                      "Number must contain 3 numerical digits.")
+    
     
   ## Absent value test ##
 

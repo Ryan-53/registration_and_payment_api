@@ -277,6 +277,7 @@ class RegistrationTest(unittest.TestCase):
                      "email must be provided.")
 
 
+
 ### get_users() tests
 
 class GetUsersTest(unittest.TestCase):

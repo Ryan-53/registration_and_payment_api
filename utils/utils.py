@@ -6,7 +6,7 @@ Purpose: Utility functions
 """
 
 def check_contains_upper_and_num(string: str) -> bool:
-  """Checks if the string contains any uppercase characters"""
+  """Checks if the string contains any uppercase characters or numbers"""
 
   upper_found: bool = False
   number_found: bool = False
