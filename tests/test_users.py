@@ -170,8 +170,8 @@ class RegistrationTest(unittest.TestCase):
     invalid_data: dict = self.valid_data.copy()
     invalid_data['dob'] = "2001"
 
+    # Checks the response's status code is as expected
     response = self.client.post('/users', json=invalid_data)
-    
     self.assertEqual(response.status_code, 400)
 
   def test_invalid_dob_age(self):

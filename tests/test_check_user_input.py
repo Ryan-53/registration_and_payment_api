@@ -56,6 +56,7 @@ class CheckInputsTest(unittest.TestCase):
     response: Response = check_input_present(user_input=valid_data_copy,
       expected=self.expected)
     
+    # Checks the response is 200 OK
     self.assertEqual(response.status_code, 200)
 
   def test_check_input_present_invalid_absent(self):
@@ -86,6 +87,7 @@ class CheckInputsTest(unittest.TestCase):
     response: Response = check_username(username=self.valid_data['username'],
                                         existing_users=[])
     
+    # Checks the response is 200 OK
     self.assertEqual(response.status_code, 200)
 
   def test_check_username_valid_existing_users_populated(self):
@@ -98,6 +100,7 @@ class CheckInputsTest(unittest.TestCase):
     response: Response = check_username(username=self.valid_data['username'],
                                         existing_users=[valid_data_copy])
     
+    # Checks the response is 200 OK
     self.assertEqual(response.status_code, 200)
 
   def test_check_username_invalid_non_alphanumeric(self):
@@ -108,6 +111,7 @@ class CheckInputsTest(unittest.TestCase):
     response: Response = check_username(username='user123?',
                                         existing_users=[])
     
+    # Checks the response is as expected
     self.assertEqual(response.status_code, 400)
     self.assertEqual(json.loads(response.data)['error'], 
                      "Username must contain only letters and numbers.")
@@ -119,6 +123,7 @@ class CheckInputsTest(unittest.TestCase):
     response: Response = check_username(username='user 123',
                                         existing_users=[])
     
+    # Checks the response is as expected
     self.assertEqual(response.status_code, 400)
     self.assertEqual(json.loads(response.data)['error'], 
                      "Username cannot contain spaces.")
@@ -131,6 +136,7 @@ class CheckInputsTest(unittest.TestCase):
     response: Response = check_username(username=self.valid_data['username'],
                                         existing_users=[self.valid_data])
     
+    # Checks the response is as expected
     self.assertEqual(response.status_code, 409)
     self.assertEqual(json.loads(response.data)['error'], 
                     "Username already taken.")
@@ -150,11 +156,8 @@ class CheckInputsTest(unittest.TestCase):
   def test_check_password_invalid_length(self):
     """Tests checking an invalid password that is too short"""
 
-    invalid_data: dict = self.valid_data.copy()
-    invalid_data['password'] = "Pass123"
-
-    # Checks the response's status code is as expected
-    response: Response = check_password(password=invalid_data['password'])
+    # Checks the response is as expected
+    response: Response = check_password(password="Pass123")
     self.assertEqual(response.status_code, 400)
     self.assertEqual(json.loads(response.data)['error'], 
                     "Password must contain a minimum of 8 characters.")
@@ -163,11 +166,8 @@ class CheckInputsTest(unittest.TestCase):
     """Tests checking an invalid password that doesn't contain an upper
     case character."""
 
-    invalid_data: dict = self.valid_data.copy()
-    invalid_data['password'] = "pass1234"
-
-    # Checks the response's status code is as expected
-    response: Response = check_password(password=invalid_data['password'])
+    # Checks the response is as expected
+    response: Response = check_password(password="pass1234")
     self.assertEqual(response.status_code, 400)
     self.assertEqual(json.loads(response.data)['error'],
                      "Password must contain at least one of both uppercase " \
@@ -177,15 +177,84 @@ class CheckInputsTest(unittest.TestCase):
     """Tests checking an invalid password that doesn't contain a
     number."""
 
-    invalid_data: dict = self.valid_data.copy()
-    invalid_data['password'] = "Password"
-
-    # Checks the response's status code is as expected
-    response: Response = check_password(password=invalid_data['password'])
+    # Checks the response is as expected
+    response: Response = check_password(password="Password")
     self.assertEqual(response.status_code, 400)
     self.assertEqual(json.loads(response.data)['error'],
                      "Password must contain at least one of both uppercase " \
                      "characters and numbers.")
+
+
+  ## check_email() Tests ##
+
+  def test_check_email_valid(self):
+    """Tests checking a valid email"""
+
+    # Passes valid data and expected arguments
+    response: Response = check_email(email=self.valid_data['email'])
+    
+    # Checks the response is 200 OK
+    self.assertEqual(response.status_code, 200)
+
+  def test_check_email_invalid_nodomain(self):
+    """Tests an invalid email that is not a valid domain"""
+
+    # Checks the response is as expected
+    response: Response = check_email(email="user@example")
+    self.assertEqual(response.status_code, 400)
+    self.assertEqual(json.loads(response.data)['error'],
+                     "Email must be in correct email format. e.g. "\
+                     "user@example.com")
+
+  def test_check_email_invalid_noat(self):
+    """Tests an invalid password that doesn't contain an @ symbol"""
+
+    # Checks the response is as expected
+    response: Response = check_email(email="user.example.com")
+    self.assertEqual(response.status_code, 400)
+    self.assertEqual(json.loads(response.data)['error'],
+                     "Email must be in correct email format. e.g. "\
+                     "user@example.com")
+
+
+  ## check_dob() Tests ##
+
+  def test_check_dob_valid(self):
+    """Tests checking a valid dob"""
+
+    # Passes valid data and expected arguments
+    response: Response = check_dob(dob=self.valid_data['dob'])
+    
+    # Checks the response is 200 OK
+    self.assertEqual(response.status_code, 200)
+
+  def test_invalid_dob_format(self):
+    """Tests checking an invalid DoB that is not in the ISO 8601 format"""
+
+    # Checks the response is as expected
+    response = check_dob(dob="01-01-2020")
+    self.assertEqual(response.status_code, 400)
+    self.assertEqual(json.loads(response.data)['error'], 
+                    "Date of Birth must be in format: YYYY-MM-DD")
+
+  def test_invalid_dob_nodate(self):
+    """Tests checking an invalid DoB that is not a date"""
+
+    # Checks the response is as expected
+    response = check_dob(dob="2001")
+    self.assertEqual(response.status_code, 400)
+    self.assertEqual(json.loads(response.data)['error'], 
+                    "Date of Birth must be in format: YYYY-MM-DD")
+
+  def test_invalid_dob_age(self):
+    """Tests checking a DoB that would mean the user is under 18"""
+
+    # Checks the response is as expected
+    # Sets DoB to today's date
+    response = check_dob(dob=date.today().strftime("%Y-%m-%d"))
+    self.assertEqual(response.status_code, 403)
+    self.assertEqual(json.loads(response.data)['error'], 
+                    "User must be at least 18 years old")
 
 
 if __name__ == "__main__":
