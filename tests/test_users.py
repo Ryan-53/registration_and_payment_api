@@ -291,7 +291,7 @@ class GetUsersTest(unittest.TestCase):
 
     self.users = [
       {"username": "user1", "credit_card_number": "1234567812345678"},
-      {"username": "user2", "credit_card_number": ""},
+      {"username": "user2"},
       {"username": "user3", "credit_card_number": "8765432187654321"}
     ]
 
@@ -332,8 +332,7 @@ class GetUsersTest(unittest.TestCase):
 
       # Check that the only user without a ccn is returned
       self.assertEqual(len(filtered_users), 1)
-      self.assertIn({"username": "user2", "credit_card_number": ""},
-                    filtered_users)
+      self.assertIn({"username": "user2"}, filtered_users)
 
   def test_get_users_cc_filter_none(self):
     """Tests the GET /users endpoint with no cc filter"""

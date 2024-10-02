@@ -102,13 +102,13 @@ def get_users() -> Response:
   if cc_filter == "Yes":
     for user in users:
       # Checks if each user has a ccn
-      if user['credit_card_number']:
+      if user.get('credit_card_number'):
         filtered_users.append(user)
 
   # If cc filter is "No" return all users without a ccn
   elif cc_filter == "No":
     for user in users:
-      if not user['credit_card_number']:
+      if not user.get('credit_card_number'):
         filtered_users.append(user)
 
   # If a cc filter was not given, return all users
