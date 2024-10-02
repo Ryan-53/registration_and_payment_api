@@ -13,6 +13,24 @@ from dateutil.relativedelta import relativedelta
 # Local Imports
 from .utils import check_contains_upper_and_num
 
+def check_input_present(user_input: dict, expected: list[str]) -> Response:
+  """Checks user_input (json body) against list of expected details to check
+  if any are missing"""
+
+  # Tests the presence of each detail as a key in the user_input dict
+  # Returning 400 Bad Request if there is a missing detail.
+  for detail in expected:
+    try:
+      user_input[detail]
+    except KeyError:
+      return Response(response=json.dumps({"error": f"{detail} must be " \
+                      "provided."}),
+                    status=400,
+                    content_type="application/json")
+
+  # If there is none missing
+  return Response(status=200)
+
 def check_username(username: str, existing_users: list[dict]) -> Response:
   """Checks username is valid"""
 
@@ -37,6 +55,7 @@ def check_username(username: str, existing_users: list[dict]) -> Response:
                       status=409,
                       content_type="application/json")
 
+  # Username is valid
   return Response(status=200)
 
 
@@ -57,6 +76,7 @@ def check_password(password: str) -> Response:
                     status=400,
                     content_type="application/json")
 
+  # Password is valid
   return Response(status=200)
 
 
@@ -73,6 +93,7 @@ def check_email(email: str) -> Response:
                     status=400,
                     content_type="application/json")
 
+  # Email is valid
   return Response(status=200)
 
 
@@ -96,18 +117,20 @@ def check_dob(dob: str) -> Response:
                     status=400,
                     content_type="application/json")
 
+  # DoB is valid
   return Response(status=200)
 
 def check_number(num: str, digits: int) -> Response:
   """Checks a numerical value is valid"""
 
-  # Checks num is 16 numbers
+  # Checks num is a number {digits} long
   if not num.isnumeric() or len(num) != digits:
     return Response(response=json.dumps({"error": "Number must contain " \
                       f"{digits} numerical digits."}),
                     status=400,
                     content_type="application/json")
 
+  # Numerical value is valid
   return Response(status=200)
 
       

@@ -7,7 +7,7 @@ Purpose: Service handling user registrations and payments
 
 from flask import Flask, Response, request, json
 from utils import check_username, check_password, check_email, check_dob, \
-  check_number, check_ccn_registered
+  check_number, check_ccn_registered, check_input_present
 
 app: Flask = Flask(__name__)
 
@@ -19,6 +19,13 @@ def register() -> Response:
 
   # Gets json object passed through POST request
   user_input: dict = request.get_json()
+
+  # Checks if there are any absent values (except ccn)
+  input_check_response: Response = check_input_present(
+    user_input=user_input.copy(),
+    expected=["username", "password", "email", "dob"])
+  if input_check_response.status_code != 200:
+    return input_check_response
 
   # Checks username
   username: str = user_input["username"]
@@ -125,20 +132,18 @@ def make_payment() -> Response:
   # Gets json object passed through POST request
   user_input: dict = request.get_json()
 
-  # Try statement in case ccn hasn't been input (empty)
-  try:
-    # Checks credit card number is valid
-    ccn: str = user_input["credit_card_number"]
-    ccn_status: Response = check_number(num=ccn, digits=16)
-    if ccn_status.status_code != 200:
-      return ccn_status
-
-  # If ccn has not been input (empty) return 400 Bad Request
-  except:
-    return Response(response=json.dumps({"error": "Number must contain 16 " \
-                      "numerical digits."}),
-                    status=400,
-                    content_type="application/json")
+  # Checks if there are any absent values
+  input_check_response: Response = check_input_present(
+    user_input=user_input.copy(),
+    expected=["credit_card_number", "amount"])
+  if input_check_response.status_code != 200:
+    return input_check_response
+  
+  # Checks credit card number is valid
+  ccn: str = user_input["credit_card_number"]
+  ccn_status: Response = check_number(num=ccn, digits=16)
+  if ccn_status.status_code != 200:
+    return ccn_status
 
   # Checks amount is valid
   amount: str = user_input["amount"]

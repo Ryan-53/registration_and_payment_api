@@ -14,9 +14,9 @@ def check_ccn_registered(ccn: str, users: list[dict], amount: str) -> Response:
   # If the ccn is registered to a user return 201 Created for successful
   # payment.
   for user in users:
-    if user['ccn'] == ccn:
+    if user['credit_card_number'] == ccn:
       return Response(response=json.dumps({"message": f"Payment of {amount} " \
-                        "made"}),
+                        "made."}),
                       status=201,
                       content_type="application/json")
 
