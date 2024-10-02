@@ -147,7 +147,7 @@ class CheckInputsTest(unittest.TestCase):
   def test_check_password_valid(self):
     """Tests checking a valid password"""
 
-    # Passes valid data and expected arguments
+    # Passes valid password
     response: Response = check_password(password=self.valid_data['password'])
     
     # Checks the response is 200 OK
@@ -190,7 +190,7 @@ class CheckInputsTest(unittest.TestCase):
   def test_check_email_valid(self):
     """Tests checking a valid email"""
 
-    # Passes valid data and expected arguments
+    # Passes valid email
     response: Response = check_email(email=self.valid_data['email'])
     
     # Checks the response is 200 OK
@@ -222,7 +222,7 @@ class CheckInputsTest(unittest.TestCase):
   def test_check_dob_valid(self):
     """Tests checking a valid dob"""
 
-    # Passes valid data and expected arguments
+    # Passes valid DoB
     response: Response = check_dob(dob=self.valid_data['dob'])
     
     # Checks the response is 200 OK
@@ -255,6 +255,63 @@ class CheckInputsTest(unittest.TestCase):
     self.assertEqual(response.status_code, 403)
     self.assertEqual(json.loads(response.data)['error'], 
                     "User must be at least 18 years old")
+
+
+  ## check_number() Tests ##
+
+  def test_check_number_valid_ccn(self):
+    """Tests checking a valid number"""
+
+    # Passes valid ccn and number of digits in it
+    response: Response = check_number(
+      num=self.valid_data['credit_card_number'],
+      digits=16)
+    
+    # Checks the response is 200 OK
+    self.assertEqual(response.status_code, 200)
+
+  def test_check_number_valid_other(self):
+    """Tests checking a valid number"""
+
+    # Passes valid number and number of digits in it
+    response: Response = check_number(
+      num="12345",
+      digits=5)
+    
+    # Checks the response is 200 OK
+    self.assertEqual(response.status_code, 200)
+
+  def test_check_number_invalid_length(self):
+    """Tests an invalid number which is not the number of digits passed"""
+
+    invalid_data: dict = self.valid_data.copy()
+    invalid_data['credit_card_number'] = "123456789123456"
+
+    # Passes valid number and number of digits in it
+    response: Response = check_number(
+      num="1234",
+      digits=5)
+
+    # Checks the response is as expected
+    self.assertEqual(response.status_code, 400)
+    self.assertEqual(json.loads(response.data)['error'], 
+                     "Number must contain 5 numerical digits.")
+
+  def test_check_number_invalid_not_numeric(self):
+    """Tests an invalid value which is not numeric"""
+
+    invalid_data: dict = self.valid_data.copy()
+    invalid_data['credit_card_number'] = "123456789a234567"
+
+    # Passes valid number and number of digits in it
+    response: Response = check_number(
+      num="12a45",
+      digits=5)
+
+    # Checks the response is as expected
+    self.assertEqual(response.status_code, 400)
+    self.assertEqual(json.loads(response.data)['error'], 
+                     "Number must contain 5 numerical digits.")
 
 
 if __name__ == "__main__":
