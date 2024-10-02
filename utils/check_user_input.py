@@ -73,7 +73,8 @@ def check_password(password: str) -> Response:
   # Checks password contains both an upper case letter and number
   if not check_contains_upper_and_num(password):
     return Response(response=json.dumps({"error": "Password must contain " \
-                      "both upper and lower case characters."}),
+                      "at least one of both uppercase characters and " \
+                      "numbers."}),
                     status=400,
                     content_type="application/json")
 

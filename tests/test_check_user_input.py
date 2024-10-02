@@ -156,6 +156,8 @@ class CheckInputsTest(unittest.TestCase):
     # Checks the response's status code is as expected
     response: Response = check_password(password=invalid_data['password'])
     self.assertEqual(response.status_code, 400)
+    self.assertEqual(json.loads(response.data)['error'], 
+                    "Password must contain a minimum of 8 characters.")
 
   def test_check_password_invalid_upper(self):
     """Tests checking an invalid password that doesn't contain an upper
@@ -167,6 +169,9 @@ class CheckInputsTest(unittest.TestCase):
     # Checks the response's status code is as expected
     response: Response = check_password(password=invalid_data['password'])
     self.assertEqual(response.status_code, 400)
+    self.assertEqual(json.loads(response.data)['error'],
+                     "Password must contain at least one of both uppercase " \
+                     "characters and numbers.")
 
   def test_check_password_invalid_number(self):
     """Tests checking an invalid password that doesn't contain a
@@ -178,6 +183,9 @@ class CheckInputsTest(unittest.TestCase):
     # Checks the response's status code is as expected
     response: Response = check_password(password=invalid_data['password'])
     self.assertEqual(response.status_code, 400)
+    self.assertEqual(json.loads(response.data)['error'],
+                     "Password must contain at least one of both uppercase " \
+                     "characters and numbers.")
 
 
 if __name__ == "__main__":
