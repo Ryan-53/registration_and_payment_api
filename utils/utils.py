@@ -2,11 +2,11 @@
 Name: test_registration.py
 Author: Ryan Gascoigne-Jones
 
-Purpose: Utility functions
+Purpose: Utility functions for checking functions.
 """
 
 def check_contains_upper_and_num(string: str) -> bool:
-  """Checks if the string contains any uppercase characters or numbers"""
+  """Checks if a string contains any uppercase characters or numbers"""
 
   upper_found: bool = False
   number_found: bool = False
