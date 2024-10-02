@@ -33,13 +33,6 @@ def check_input_present(user_input: dict, expected: list[str]) -> Response:
 
 def check_username(username: str, existing_users: list[dict]) -> Response:
   """Checks username is valid"""
-
-  # Checks username is alphanumeric
-  if not username.isalnum():
-    return Response(response=json.dumps({"error": "Username must contain only" \
-                      "letters and numbers."}),
-                    status=400,
-                    content_type="application/json")
   
   # Checks username doesn't contain spaces
   if " " in username:
@@ -48,10 +41,18 @@ def check_username(username: str, existing_users: list[dict]) -> Response:
                     status=400,
                     content_type="application/json")
 
+  # Checks username is alphanumeric
+  if not username.isalnum():
+    return Response(response=json.dumps({"error": "Username must contain " \
+                      "only letters and numbers."}),
+                    status=400,
+                    content_type="application/json")
+
   # Checks username doesn't already exist
   for user in existing_users:
     if user['username'] == username:
-      return Response(response=json.dumps({"error": "Username already taken."}),
+      return Response(response=json.dumps({"error": "Username already " \
+                        "taken."}),
                       status=409,
                       content_type="application/json")
 
@@ -71,8 +72,8 @@ def check_password(password: str) -> Response:
   
   # Checks password contains both an upper case letter and number
   if not check_contains_upper_and_num(password):
-    return Response(response=json.dumps({"error": "Password must contain both" \
-                      "upper and lower case characters."}),
+    return Response(response=json.dumps({"error": "Password must contain " \
+                      "both upper and lower case characters."}),
                     status=400,
                     content_type="application/json")
 
@@ -106,8 +107,8 @@ def check_dob(dob: str) -> Response:
 
     # Checks age is above 18
     if dob_obj > (date.today() - relativedelta(years=18)):
-      return Response(response=json.dumps({"error": "User must be at least 18" \
-                      " years old"}),
+      return Response(response=json.dumps({"error": "User must be at least " \
+                      "18 years old"}),
                     status=403,
                     content_type="application/json")
 
@@ -133,4 +134,6 @@ def check_number(num: str, digits: int) -> Response:
   # Numerical value is valid
   return Response(status=200)
 
+if __name__ == "__main__":
+  pass
       

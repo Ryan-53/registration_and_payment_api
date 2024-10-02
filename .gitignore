@@ -7,3 +7,7 @@ __pycache__/
 
 # Local settings
 .vscode
+
+# Local unit testing
+.coverage
+htmlcov/

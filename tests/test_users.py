@@ -1,5 +1,5 @@
 """
-Name: test_registration.py
+Name: test_users.py
 Author: Ryan Gascoigne-Jones
 
 Purpose: Tests the functioning of the users endpoint.
@@ -31,6 +31,7 @@ class RegistrationTest(unittest.TestCase):
       "credit_card_number": "1234567891234567"
     }
 
+
   ## Normal valid register test ##
 
   def test_valid_registration(self):
@@ -48,6 +49,7 @@ class RegistrationTest(unittest.TestCase):
       # data sent in request
       self.assertEqual(json.loads(response.data)['user'], self.valid_data)
 
+
   ## Username tests ##
 
   def test_invalid_username_space(self):
@@ -61,7 +63,7 @@ class RegistrationTest(unittest.TestCase):
     # Checks if the status code is 400 Bad Request
     self.assertEqual(response.status_code, 400)
 
-  def test_invalid_username_alphanumeric(self):
+  def test_invalid_username_non_alphanumeric(self):
     """Tests an invalid username with non alphanumeric characters in
     it."""
 
@@ -92,6 +94,7 @@ class RegistrationTest(unittest.TestCase):
       self.assertEqual(len(mock_users), 1)
       self.assertEqual(mock_users[0]["username"], self.valid_data["username"])
 
+
   ## Password tests ##
 
   def test_invalid_password_length(self):
@@ -106,7 +109,7 @@ class RegistrationTest(unittest.TestCase):
 
   def test_invalid_password_upper(self):
     """Tests an invalid password that doesn't contain an upper case
-    character"""
+    character."""
 
     invalid_data: dict = self.valid_data.copy()
     invalid_data['password'] = "pass1234"
@@ -124,6 +127,7 @@ class RegistrationTest(unittest.TestCase):
     # Checks the response's status code is as expected
     response = self.client.post('/users', json=invalid_data)
     self.assertEqual(response.status_code, 400)
+
 
   ## Email tests ##
 
@@ -146,6 +150,7 @@ class RegistrationTest(unittest.TestCase):
     # Checks the response's status code is as expected
     response = self.client.post('/users', json=invalid_data)
     self.assertEqual(response.status_code, 400)
+
 
   ## DoB tests ##
 
@@ -179,6 +184,7 @@ class RegistrationTest(unittest.TestCase):
     # Checks the response's status code is as expected
     response = self.client.post('/users', json=invalid_data)
     self.assertEqual(response.status_code, 403)
+
 
   ## Credit card number tests ##
 
@@ -215,6 +221,7 @@ class RegistrationTest(unittest.TestCase):
     response = self.client.post('/users', json=valid_data)
     self.assertEqual(response.status_code, 201)
 
+
   ## User creation test ##
 
   def test_user_creation(self):
@@ -250,7 +257,9 @@ class RegistrationTest(unittest.TestCase):
       # Checks if both users were added to the mocked users list
       self.assertEqual(len(mock_users), 2)
       self.assertEqual(mock_users[0]["username"], self.valid_data["username"])
-      self.assertEqual(mock_users[1]["username"], second_valid_data["username"])
+      self.assertEqual(mock_users[1]["username"],
+                       second_valid_data["username"])
+
 
   ## Absent value test ##
 
