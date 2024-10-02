@@ -352,6 +352,19 @@ class GetUsersTest(unittest.TestCase):
       self.assertEqual(len(filtered_users), 3)
       self.assertEqual(self.users, filtered_users)
 
+  def test_get_users_cc_filter_none_no_existing_users(self):
+    """Tests the GET /users endpoint with no cc filter"""
+
+    # Mocks the users list (exists within this test case only)
+    with patch('registration_payment_service.users', new=[]):
+
+      # Send GET request with a CreditCard=Yes query
+      response = self.client.get('/users')
+      self.assertEqual(response.status_code, 204)
+
+      # Checks the response body is an empty byte string
+      self.assertEqual(response.data, b'')
+
 
 if __name__ == "__main__":
   unittest.main()
