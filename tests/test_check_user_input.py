@@ -17,7 +17,7 @@ class CheckInputsTest(unittest.TestCase):
   """Tests the check functions in check_user_input.py"""
 
   def setUp(self):
-    """Set up mock data"""
+    """Set up test data"""
 
     # Valid input (to be changed by test)
     self.valid_data: dict = {
@@ -232,7 +232,7 @@ class CheckInputsTest(unittest.TestCase):
     """Tests checking an invalid DoB that is not in the ISO 8601 format"""
 
     # Checks the response is as expected
-    response = check_dob(dob="01-01-2020")
+    response: Response = check_dob(dob="01-01-2020")
     self.assertEqual(response.status_code, 400)
     self.assertEqual(json.loads(response.data)['error'], 
                     "Date of Birth must be in format: YYYY-MM-DD")
@@ -241,7 +241,7 @@ class CheckInputsTest(unittest.TestCase):
     """Tests checking an invalid DoB that is not a date"""
 
     # Checks the response is as expected
-    response = check_dob(dob="2001")
+    response: Response = check_dob(dob="2001")
     self.assertEqual(response.status_code, 400)
     self.assertEqual(json.loads(response.data)['error'], 
                     "Date of Birth must be in format: YYYY-MM-DD")
@@ -251,7 +251,7 @@ class CheckInputsTest(unittest.TestCase):
 
     # Checks the response is as expected
     # Sets DoB to today's date
-    response = check_dob(dob=date.today().strftime("%Y-%m-%d"))
+    response: Response = check_dob(dob=date.today().strftime("%Y-%m-%d"))
     self.assertEqual(response.status_code, 403)
     self.assertEqual(json.loads(response.data)['error'], 
                     "User must be at least 18 years old")
