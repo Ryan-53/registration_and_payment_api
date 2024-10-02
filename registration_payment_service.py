@@ -82,7 +82,7 @@ def register() -> Response:
   # Creates user (adds to store)
   users.append(new_user)
   
-  # Return 
+  # Returns 201 Created along with details of the newly registered user
   return Response(response=json.dumps({
                     "message": "User successfully registered",
                     "user": new_user
